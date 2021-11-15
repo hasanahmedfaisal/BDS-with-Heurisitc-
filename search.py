@@ -127,26 +127,47 @@ def depthFirstSearch(problem):
     #util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
-    """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    new_found = Queue() #custom queue class on top used to implement BFS 
-    new_found.enqueue((problem.getStartState(), [], 0))
-    found = set()
+    q = util.Queue()
 
-    while not new_found.isEmpty():
-        node, path, cost = new_found.dequeue()
-        if problem.isGoalState(node):
-            return path
-        if node in found:
-            continue
-        found.add(node)
-        for n,p,c in problem.getSuccessors(node):
-            if n not in new_found.items and n not in found:
-                new_found.enqueue((n, path+[p], c))
-    return False
+    #visitedPos holds all of the visited positions already (this is required for
+    #the graph-search implementation of BFS)
+    visitedPos = []
+
+    #push starting state onto the stack with an empty path
+    q.push((problem.getStartState(),[]))
+
+    #Then we can start looping, note our loop condition is if the stack is empty
+    #if the stack is empty at any point we failed to find a solution
+    while(not q.isEmpty()):
+
+        #since our stack elements contain two elements
+        #we have to fetch them both like this
+        currentPos,currentPath = q.pop()
+        #print("Currently Visiting:", currentPos, "\nPath=", end="");
+        #print(currentPath);
+        #then we append the currentPos to the list of visited positions
+        visitedPos.append(currentPos)
+
+        #check if current state is a goal state, if it is, return the path
+        if (problem.isGoalState(currentPos)):
+            return currentPath;
+
+        #obtain the list of successors from our currentPos
+        successors = problem.getSuccessors(currentPos)
+
+        #if we have successors, note that these successors have a position and the path to get there
+        if (len(successors) != 0):
+            #iterate through them
+            for state in successors:
+                #if we find one that has not already been visisted
+                if ((state[0] not in visitedPos) and (state[0] not in (stateQ[0] for stateQ in q.list))):
+                    #calculate the new path (currentPath + path to reach new state's position)
+                    newPath = currentPath + [state[1]]
+                    #push it onto the stack with the new path
+                    q.push((state[0],newPath))
                     
     #util.raiseNotDefined()
-
+    #added to increase effectiveness
 def uniformCostSearch(problem):
     q = util.PriorityQueue()
 
@@ -383,3 +404,4 @@ astar = aStarSearch
 ucs = uniformCostSearch
 BD0 = BDSMM0
 BD = BDSMM
+

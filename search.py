@@ -211,7 +211,7 @@ class PriorityQ_and_Function(PriorityQueue):
         PriorityQueue.push(self, item, self.priorityFunc(self.problem, item, heuristic))
 
 
-def nullHeuristic(state, problem=None):
+def nullHeuristic(state, problem=None, goal = None):
     """
     A heuristic function estimates the cost from the current state to the nearest
     goal in the provided SearchProblem.  This heuristic is trivial.

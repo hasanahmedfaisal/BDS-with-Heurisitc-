@@ -119,7 +119,7 @@ def breadthFirstSearch(problem):
     visited = []
 
     # push starting state onto the stack with an empty path
-    q.push((problem.getStartState(), []))
+    q.push((problem.getStartState(), [])) #second space is for the path with the current node
 
     # Then we can start looping, note our loop condition is if the stack is empty
     # if the stack is empty at any point we failed to find a solution
@@ -211,7 +211,7 @@ class PriorityQ_and_Function(PriorityQueue):
         PriorityQueue.push(self, item, self.priorityFunc(self.problem, item, heuristic))
 
 
-def nullHeuristic(state, problem=None, goal = None):
+def nullHeuristic(state, problem=None, goal = None): #modified the null heuristic to make it work with the newer versions of the BDS with heuristics
     """
     A heuristic function estimates the cost from the current state to the nearest
     goal in the provided SearchProblem.  This heuristic is trivial.
@@ -277,123 +277,124 @@ def aStarSearch(problem, heuristic = nullHeuristic):
 
 directions = {'North': 'South', 'East': 'West', 'South': 'North', 'West': 'East'}
 
-def biDirectionalSearchMM0(problem):
+def BDSMM0(problem):
     """
     Bi directional search - MM0.
     Two simple BFS in both direction.
     """
     def __reversedPath(p):
-        """
-        Given a action list, return the reversed version of it.
-        """
-        return [Directions.REVERSE[x] for x in p][::-1]
+       # this function reverses a list and returns it #
+        return [Directions.REVERSE[x] for x in p][::-1] # the -1 signifies that we are starting from the back
 
     from util import Queue
     # Init two ques and visited sets.
-    que1, que2 = Queue(), Queue()
-    visited1, visited2 = dict(), dict()
+    q1 = Queue() #making 2 queues since BDS is just BFS in 2 directions and BFS is implemented via queues (First come First Serve)
+                   #the node found first is expanded first
+    q2 = Queue()
+    visited1 = dict() #making dictionaries so that we have a key (node) and a value assigned to that key (the path from that node towards the goal)
+    visited2 = dict() #similarly the second one for the this purpose
 
-    que1.push((problem.getStartState(), [], 0))
-    que2.push((problem.goal, [], 0))
-    visited1[problem.getStartState()] = ''
-    visited2[problem.goal] = ''
-    expanding_level1, expanding_level2 = 0, 0
+    q1.push((problem.getStartState(), [], 0)) #this queue is for the forward diretion search and hence this starts from th stat state
+    q2.push((problem.goal, [], 0)) # this is for the backward seach and hence this starts from the gol state , we try to make them intersect
+    visited1[problem.getStartState()] = '' #empty at first
+    visited2[problem.goal] = '' #empty at first
+    expanding_level1 = 0
+    expanding_level2 = 0
 
-    # Two simple BFS in each while round
+    # Two simple BFS in each while no of the queues are empty
     while True:
         # First BFS, from start to goal
         # Will expand one level of nodes
-        if que1.isEmpty():
-            return []
-        while (not que1.isEmpty()) and que1.list[0][2] == expanding_level1:
+        if q1.isEmpty():
+            return [] #stop
+        while (not q1.isEmpty()) and q1.list[0][2] == expanding_level1:
             # Get current state
-            cur_state, path, level = que1.pop()
+            cur_state, path, level = q1.pop()
 
             # Check result
-            if problem.isGoalStateBi(cur_state, visited2):
-                return path + __reversedPath(visited2[cur_state])
+            if problem.isGoalStateBi(cur_state, visited2):# from the searh agents file checks whether the search is going back to the already
+                return path + __reversedPath(visited2[cur_state])# visited nodes
 
             # Expand valid neighbors
-            valid_neighbor = filter(lambda x: x[0] not in visited1, problem.getSuccessors(cur_state))
-            for nxt in valid_neighbor:
-                que1.push((nxt[0], path+[nxt[1]], level+1))
+            valid_neighbor = filter(lambda x: x[0] not in visited1, problem.getSuccessors(cur_state))# just gives us the neighbors and they should also
+            for nxt in valid_neighbor: # be unvisited
+                q1.push((nxt[0], path+[nxt[1]], level+1))
                 visited1[nxt[0]] = path+[nxt[1]]
         expanding_level1 += 1
 
         # Second BFS, from foal to start
         # Will expand one level of nodes
-        if que2.isEmpty():
+        if q2.isEmpty():
             return []
-        while (not que2.isEmpty()) and que2.list[0][2] == expanding_level2:
+        while (not q2.isEmpty()) and q2.list[0][2] == expanding_level2: #starting to expand levels from the bottom now
             # Get current state
-            cur_state, path, level = que2.pop()
+            cur_state, path, level = q2.pop()
 
             # Check result
             if problem.isGoalStateBi(cur_state, visited1):
                 return __reversedPath(visited1[cur_state]) + path
 
             # Expand valid neighbors
-            valid_neighbor = filter(lambda x: x[0] not in visited2, problem.getSuccessors(cur_state))
+            valid_neighbor = filter(lambda i: i[0] not in visited2, problem.getSuccessors(cur_state))#getting the valid neighbors
             for nxt in valid_neighbor:
-                que2.push((nxt[0], path+[nxt[1]], level+1))
+                q2.push((nxt[0], path+[nxt[1]], level+1))
                 visited2[nxt[0]] = path+[nxt[1]]
         expanding_level2 += 1
     return []
 
 
-def biDirectionalSearchMM(problem, heuristic):
-    """
-    Bi directional search - MM.
-    Two Astar search in two directions.
-    """
-    def __reversedPath(p):
-        """
-        Given a action list, return the reversed version of it.
-        """
-        return [Directions.REVERSE[x] for x in p][::-1]
+def BDSMM(problem, heuristic): #now this part is going to have the a* search in 2 directions
+
+    def reversedPath(p):
+
+        return [Directions.REVERSE[x] for x in p][::-1] #again, we want the reversed path list function for the
 
     from util import PriorityQueue
     # Init two priority queues and visited dicts
-    pq1, pq2 = PriorityQueue(), PriorityQueue()
-    visited1, visited2 = dict(), dict()
+    pq1 = PriorityQueue()
+    pq2 = PriorityQueue()
+    visited1 = dict()
+    visited2 = dict()
 
-    pq1.push((problem.getStartState(), [], 0), heuristic(problem.getStartState(), problem, 'goal'))
+    pq1.push((problem.getStartState(), [], 0), heuristic(problem.getStartState(), problem, 'goal')) #this heuristic is going to be the null heuritic
+    #we defined earlier
     pq2.push((problem.goal, [], 0), heuristic(problem.goal, problem, 'start'))
-    visited1[problem.getStartState()] = []
-    visited2[problem.goal] = []
+    visited1[problem.getStartState()] = [] #empty
+    visited2[problem.goal] = [] #empty
 
-    # Run two Astar search in each while round
+    # Run two a* search in each while round
     while True:
-        # First Astar search, from start to goal
+        # First a* search, from start to goal
         # Only expand one node
         if pq1.isEmpty():
             return []
         cur_state, path, level = pq1.pop()
 
         if problem.isGoalStateBi(cur_state, visited2):
-            return path + __reversedPath(visited2[cur_state])
+            return path + reversedPath(visited2[cur_state])
 
-        valid_neighbor = filter(lambda x: x[0] not in visited1, problem.getSuccessors(cur_state))
-        for nxt in valid_neighbor:
-            np = heuristic(nxt[0], problem, 'goal') + problem.getCostOfActions(path+[nxt[1]])
+        valid_neighbor = filter(lambda x: x[0] not in visited1, problem.getSuccessors(cur_state)) # getting the valid neighbors here
+        for nxt in valid_neighbor: # the 'filter' keyword helps us get only those values that are satisfying the condition
+            np = heuristic(nxt[0], problem, 'goal') + problem.getCostOfActions(path+[nxt[1]]) #choose path and nodes on the basis of the heuristic
             pq1.push((nxt[0], path+[nxt[1]], level+1), np)
             visited1[nxt[0]] = path+[nxt[1]]
 
-        # Second Astar search, from goal to start
+        # Second a* search, from goal to start
         # Only expand one node
+        # this is the same search again but only from the other side, that is, from the goal state to the start state
         if pq2.isEmpty():
             return []
 
         cur_state, path, level = pq2.pop()
 
         if problem.isGoalStateBi(cur_state, visited1):
-            return __reversedPath(visited1[cur_state]) + path
+            return reversedPath(visited1[cur_state]) + path
 
         valid_neighbor = filter(lambda x: x[0] not in visited2, problem.getSuccessors(cur_state))
-        for nxt in valid_neighbor:
-            np = heuristic(nxt[0], problem, 'start') + problem.getCostOfActions(path+[nxt[1]])
-            pq2.push((nxt[0], path+[nxt[1]], level+1), np)
-            visited2[nxt[0]] = path+[nxt[1]]
+        for new in valid_neighbor:
+            np = heuristic(new[0], problem, 'start') + problem.getCostOfActions(path+[new[1]])
+            pq2.push((new[0], path+[new[1]], level+1), np)
+            visited2[new[0]] = path+[new[1]]
 
     return []
 
@@ -401,5 +402,5 @@ def biDirectionalSearchMM(problem, heuristic):
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
-bd0 = biDirectionalSearchMM0
-bd = biDirectionalSearchMM
+bd0 = BDSMM0
+bd = BDSMM

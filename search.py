@@ -223,7 +223,7 @@ def f(problem, state, heuristic):
     return problem.getCostOfActions(state[1]) + heuristic(state[0], problem)
 
 
-def aStarSearch(problem, heuristic = nullHeuristic):
+def aStarSearch(problem, heuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
     queueXY = PriorityQ_and_Function(problem, f)
@@ -307,7 +307,13 @@ def BDSMM0(problem):
         # Will expand one level of nodes
         if q1.isEmpty():
             return [] #stop
-        while (not q1.isEmpty()) and q1.list[0][2] == expanding_level1:
+        #############################################
+        #print(q1.list[0][0]) #node number and distance from the goal
+        #print(q1.list[0][1]) #directions taken also show the path
+        #print(q1.list[0][2]) #level
+        #print("hello")
+        #############################################
+        while (not q1.isEmpty()) and q1.list[0][2] == expanding_level1: #node wise taking steps
             # Get current state
             cur_state, path, level = q1.pop()
 
@@ -320,12 +326,25 @@ def BDSMM0(problem):
             for nxt in valid_neighbor: # be unvisited
                 q1.push((nxt[0], path+[nxt[1]], level+1))
                 visited1[nxt[0]] = path+[nxt[1]]
-        expanding_level1 += 1
+        expanding_level1 += 1 #number of levels that have been expanded
 
+        ''''get the level number from here
+        ###########################################################
+        #print("Level here {}".format(expanding_level1)) 
+        ###############################################################
+        '''''
         # Second BFS, from foal to start
         # Will expand one level of nodes
         if q2.isEmpty():
             return []
+
+        #############################################
+        #print(q2.list[0][0]) #node number and distance from the goal
+        #print(q2.list[0][1]) #directions taken also show the path
+        #print(q2.list[0][2]) #level
+        #print("hello")
+        #############################################
+
         while (not q2.isEmpty()) and q2.list[0][2] == expanding_level2: #starting to expand levels from the bottom now
             # Get current state
             cur_state, path, level = q2.pop()
@@ -356,7 +375,7 @@ def BDSMM(problem, heuristic): #now this part is going to have the a* search in 
     visited1 = dict()
     visited2 = dict()
 
-    pq1.push((problem.getStartState(), [], 0), heuristic(problem.getStartState(), problem, 'goal')) #this heuristic is going to be the null heuritic
+    pq1.push((problem.getStartState(), [], 0), heuristic(problem.getStartState(), problem, 'goal')) #this heuristic is the foodHeuristic
     #we defined earlier
     pq2.push((problem.goal, [], 0), heuristic(problem.goal, problem, 'start'))
     visited1[problem.getStartState()] = [] #empty

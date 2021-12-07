@@ -421,5 +421,6 @@ def BDSMM(problem, heuristic): #now this part is going to have the a* search in 
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
+ucs = uniformCostSearch
 bd0 = BDSMM0
 bd = BDSMM
